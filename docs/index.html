@@ -63,21 +63,14 @@ h2 .dim { display: block; }   /* the second voice of a title starts its own line
 .btn svg { width: 15px; height: 15px; transition: transform 0.3s var(--ease); }
 .btn:active { transform: scale(0.97); }
 
-/* ── The bar: a menu bar, with the island hanging in its middle ─────────────── */
+/* ── The bar ────────────────────────────────────────────────────────────────── */
 .bar { position: fixed; inset: 0 0 auto; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(22, 22, 24, 0.66); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08); }
 .bar-in { display: flex; align-items: center; justify-content: space-between; height: var(--bar); }
 .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--label); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; text-decoration: none; }
 .brand img { width: 26px; height: 26px; }
-.bar-get { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 14px; border-radius: 999px; background: var(--accent-fill); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: background-color 0.2s, transform 0.25s var(--ease); }
+.bar-get { position: relative; display: inline-flex; align-items: center; height: 30px; padding: 0 14px; border-radius: 999px; background: var(--accent-fill); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: background-color 0.2s, transform 0.25s var(--ease); }
 .bar-get::after { content: ""; position: absolute; inset: -7px -6px; }
-.bar-get svg { display: none; width: 16px; height: 16px; }
 .bar-get:active { transform: scale(0.95); }
-.bar > .ni { top: env(safe-area-inset-top, 0px); }
-@media (max-width: 640px) {
-  .brand span, .bar-get span { display: none; }
-  .bar-get { width: 32px; height: 32px; padding: 0; justify-content: center; }
-  .bar-get svg { display: block; }
-}
 
 /* ── The island (src/renderer/views/notch.css), placed from the camera outwards ─ */
 .ni { position: absolute; left: 50%; top: 0; width: 0; height: 0; font-family: var(--font); color: rgba(255, 255, 255, 0.92); text-align: left; -webkit-user-select: none; user-select: none; }
@@ -383,13 +376,9 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
 
 <header class="bar">
   <div class="bar-in wrap">
-    <a class="brand" href="#top" aria-label="VSCodeWorkers, haut de la page"><img src="media/icon-64.png" width="26" height="26" alt=""><span>VSCodeWorkers</span></a>
-    <a class="bar-get" href="#telecharger" aria-label="Télécharger VSCodeWorkers">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5.5 19.5h13"/></svg>
-      <span>Télécharger</span>
-    </a>
+    <a class="brand" href="#top" aria-label="VSCodeWorkers, haut de la page"><img src="media/icon-64.png" width="26" height="26" alt="">VSCodeWorkers</a>
+    <a class="bar-get" href="#telecharger">Télécharger</a>
   </div>
-  <div class="ni" id="island" role="img" aria-label="L’encoche vue par VSCodeWorkers : deux discussions terminées à gauche de la caméra, trois en cours à droite."></div>
 </header>
 
 <main>
@@ -555,7 +544,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
       <div class="step-text">
         <button class="tc" type="button" data-t="47.1" aria-label="Voir ce passage du film, à 0:47"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:47</time></button>
         <h2 id="s-skins">48 skins. <span class="dim">Blobs, ouvriers, robots, animaux.</span></h2>
-        <p>Chaque discussion a son personnage. Choisis une série&nbsp;: l’encoche, en haut de la page, change avec.</p>
+        <p>Chaque discussion a son personnage. Choisis une série&nbsp;: les encoches de la page changent avec.</p>
       </div>
       <div class="skins">
         <div class="tabs" id="skin-tabs" role="tablist" aria-label="Séries de skins">
@@ -825,7 +814,6 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
     C: { status: 'working', plan: 45, left: '~12 min' }, D: { status: 'working' }, E: { status: 'done' },
   }
   const BASE = { left: ['B', 'E'], right: ['D', 'C', 'A'], card: null, talks: NOW }
-  const SMALL = { ...BASE, right: ['D', 'C'], ids: ['B', 'C', 'D', 'E'] }   // a very narrow screen
   const A_ENDS = { ...BASE, talks: { ...NOW, A: { status: 'working', plan: 100, left: '~1 min' } } }
   const A_DONE = { left: ['A', 'B', 'E'], right: ['D', 'C'], card: null, talks: { ...NOW, A: { status: 'done', unread: true } } }
   const A_SEEN = { ...A_DONE, talks: { ...NOW, A: { status: 'done' } } }
@@ -867,7 +855,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
 
   function cardHTML(s) {
     if (s.card === 'summary') {
-      const talks = (s.ids || IDS).map((id) => s.talks[id])
+      const talks = IDS.map((id) => s.talks[id])
       const count = (status) => talks.filter((talk) => talk.status === status).length
       const asking = count('asking')
       const working = count('working')
@@ -992,44 +980,6 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
       close(4000)
     })
   }
-
-  // ── The island of the bar, at the top of the page ────────────────────────────
-  const brand = $('.brand')
-  const get = $('.bar-get')
-  const bar = createIsland($('#island'), { notch: 33, gap: 120, cardWidth: NI.card, state: { ...BASE, left: [], right: [] } })
-  let barRest = BASE
-  let barOut = false
-
-  // As wide as the room between the name and the button allows
-  function fitBar() {
-    const width = document.documentElement.clientWidth
-    const left = width / 2 - brand.getBoundingClientRect().right - 10
-    const right = get.getBoundingClientRect().left - width / 2 - 10
-    let pick = null
-    for (const state of [BASE, SMALL]) {
-      const wings = islandLayout(state, { notch: 0, gap: 0, cardWidth: 0 })
-      for (const r of [4 / 3, 1]) {
-        const gap = Math.min(120, 2 * Math.min(left / r - wings.lw - NI.edge, right / r - wings.rw - NI.edge))
-        if (!pick && gap >= (r > 1 ? 70 : 44)) pick = { state, r, gap }
-      }
-    }
-    pick = pick || { state: SMALL, r: 1, gap: 44 }
-    const { root, o } = bar
-    root.style.setProperty('--r', pick.r)
-    root.style.setProperty('--u', snap(1.5 * pick.r))
-    root.style.setProperty('--ug', snap(2 * pick.r))
-    root.style.setProperty('--uc', snap(2 * pick.r))
-    o.notch = 44 / pick.r
-    o.gap = pick.gap
-    o.cardWidth = Math.min(NI.card, Math.floor((width - 16) / pick.r))
-    barRest = pick.state
-    bar.s = barOut ? { ...barRest, card: bar.s.card } : { ...barRest, left: [], right: [] }
-    bar.place()
-  }
-  fitBar()
-  live(bar)
-  // The bubbles come out of the notch once the page is there
-  setTimeout(() => { barOut = true; bar.set({ ...barRest, card: bar.s.card }) }, still.matches ? 0 : 500)
 
   // ── The scenes: the top of a Mac's screen, with the island at work ───────────
   const SCENES = {
@@ -1339,7 +1289,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
   let asked = 0
   const refit = () => {
     cancelAnimationFrame(asked)
-    asked = requestAnimationFrame(() => { fitBar(); stages.forEach(fitStage); fitSkins() })
+    asked = requestAnimationFrame(() => { stages.forEach(fitStage); fitSkins() })
   }
   addEventListener('resize', refit)
   addEventListener('load', refit)
