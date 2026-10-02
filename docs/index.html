@@ -1,0 +1,1349 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VSCodeWorkers — Tes discussions Claude Code, autour de l’encoche</title>
+<meta name="description" content="VSCodeWorkers donne un petit personnage à chacune de tes discussions Claude Code et les range autour de l’encoche de ton Mac. Gratuit, pour macOS et Windows.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" href="media/icon-64.png">
+<link rel="apple-touch-icon" href="media/icon-180.png">
+<!-- Where the site lives: a shared link wants these addresses in full (site/README.md) -->
+<link rel="canonical" href="https://vscodeworkers.aesomesoup.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://vscodeworkers.aesomesoup.com/">
+<meta property="og:title" content="VSCodeWorkers">
+<meta property="og:description" content="Tes discussions Claude Code, autour de l’encoche. Gratuit, pour macOS et Windows.">
+<meta property="og:image" content="https://vscodeworkers.aesomesoup.com/media/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+/* The look of the app (src/renderer/theme.css, dark) on a black ground */
+:root {
+  color-scheme: dark;
+  --bg: #000; --surface: #101012; --surface-2: #1a1a1d;
+  --line: rgba(255, 255, 255, 0.1); --line-2: rgba(255, 255, 255, 0.18);
+  --label: rgba(255, 255, 255, 0.92); --label-2: rgba(255, 255, 255, 0.64); --label-3: rgba(255, 255, 255, 0.46);
+  --accent: #0a84ff; --accent-text: #4aa3ff; --accent-fill: #0071e3;
+  --green: #30d158; --orange: #ff9f0a; --red: #ff453a;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --bar: 44px; --gutter: clamp(16px, 4vw, 40px); --page: 1120px;
+  /* The island: 1 is the app's own size; the page draws it larger. --u: screen pixels per pixel of a character */
+  --r: 1; --u: 1.5; --ug: 2; --uc: 2;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px) + 20px); }
+body { margin: 0; background: var(--bg); color: var(--label); font: 400 17px/1.5 var(--font); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+img, svg, video { display: block; }
+h1, h2, h3, p, figure, ol, ul { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+a { color: var(--accent-text); -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+code { padding: 2px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.09); font: 0.9em var(--mono); color: var(--label); white-space: nowrap; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: calc(var(--page) + 2 * var(--gutter)); margin-inline: auto; padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 1.04; letter-spacing: -0.035em; }
+h2 { font-size: clamp(30px, 4.2vw, 50px); line-height: 1.08; letter-spacing: -0.03em; }
+.dim { color: var(--label-3); }
+h2 .dim { display: block; }   /* the second voice of a title starts its own line */
+.if-mouse { display: none; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 999px; font-size: 16px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background-color 0.2s, color 0.2s, transform 0.25s var(--ease); }
+.btn.is-main { background: var(--accent-fill); color: #fff; }
+.btn.is-quiet { color: var(--accent-text); padding-inline: 12px; }
+.btn svg { width: 15px; height: 15px; transition: transform 0.3s var(--ease); }
+.btn:active { transform: scale(0.97); }
+
+/* ── The bar: a menu bar, with the island hanging in its middle ─────────────── */
+.bar { position: fixed; inset: 0 0 auto; z-index: 50; padding-top: env(safe-area-inset-top, 0px); background: rgba(22, 22, 24, 0.66); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08); }
+.bar-in { display: flex; align-items: center; justify-content: space-between; height: var(--bar); }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--label); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; text-decoration: none; }
+.brand img { width: 26px; height: 26px; }
+.bar-get { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 14px; border-radius: 999px; background: var(--accent-fill); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: background-color 0.2s, transform 0.25s var(--ease); }
+.bar-get::after { content: ""; position: absolute; inset: -7px -6px; }
+.bar-get svg { display: none; width: 16px; height: 16px; }
+.bar-get:active { transform: scale(0.95); }
+.bar > .ni { top: env(safe-area-inset-top, 0px); }
+@media (max-width: 640px) {
+  .brand span, .bar-get span { display: none; }
+  .bar-get { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  .bar-get svg { display: block; }
+}
+
+/* ── The island (src/renderer/views/notch.css), placed from the camera outwards ─ */
+.ni { position: absolute; left: 50%; top: 0; width: 0; height: 0; font-family: var(--font); color: rgba(255, 255, 255, 0.92); text-align: left; -webkit-user-select: none; user-select: none; }
+.ni.is-still, .ni.is-still * , .ni.is-still *::after { transition: none !important; }
+.ni-shape { position: absolute; top: 0; left: calc(var(--x0) * var(--r) * 1px); width: calc(var(--w) * var(--r) * 1px); height: calc(var(--h) * var(--r) * 1px); border-radius: 0 0 calc(12px * var(--r)) calc(12px * var(--r)); background: #000; transition: left 0.34s var(--ease), width 0.34s var(--ease), height 0.34s var(--ease), border-radius 0.34s var(--ease), box-shadow 0.34s var(--ease); }
+.ni.is-open .ni-shape { border-radius: 0 0 calc(20px * var(--r)) calc(20px * var(--r)); box-shadow: 0 calc(10px * var(--r)) calc(28px * var(--r)) rgba(0, 0, 0, 0.35); }
+.ni-shape::before, .ni-shape::after { content: ""; position: absolute; top: 0; width: calc(8px * var(--r)); height: calc(8px * var(--r)); }
+.ni-shape::before { right: calc(100% - 0.5px); background: radial-gradient(circle at 0 100%, transparent calc(7.5px * var(--r)), #000 calc(8px * var(--r))); }
+.ni-shape::after { left: calc(100% - 0.5px); background: radial-gradient(circle at 100% 100%, transparent calc(7.5px * var(--r)), #000 calc(8px * var(--r))); }
+.ni-lens { position: absolute; left: calc(-4.5px * var(--r)); top: calc((var(--notch) - 9) * var(--r) * 0.5px); width: calc(9px * var(--r)); height: calc(9px * var(--r)); border-radius: 50%; background: radial-gradient(circle at 38% 34%, #33415f 0, #131826 42%, #06070b 100%); box-shadow: 0 0 0 calc(1.5px * var(--r)) #0d0e12; }
+.ni-cam { position: absolute; top: 0; left: calc(var(--gap) * var(--r) * -0.5px); width: calc(var(--gap) * var(--r) * 1px); height: calc(var(--notch) * var(--r) * 1px); }
+
+.ni-bubble { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: calc(var(--s) * var(--r) * 1px); height: calc(var(--s) * var(--r) * 1px); border-radius: calc(7px * var(--r)); transform: translate(calc(var(--x) * var(--r) * 1px), calc(var(--y) * var(--r) * 1px)); transition: transform 0.34s var(--ease), width 0.34s var(--ease), height 0.34s var(--ease), opacity 0.22s linear, background-color 0.15s; }
+.ni-bubble.is-grown { border-radius: calc(9px * var(--r)); }
+.ni-bubble.is-away { opacity: 0; pointer-events: none; }
+.ni-bubble.is-asking { box-shadow: 0 0 0 calc(1.5px * var(--r)) var(--orange); }
+.ni-sprite { display: block; }
+.px { overflow: visible; }
+.px .f1, .px .f2 { visibility: hidden; }
+.ni .px, .skin .px { filter: drop-shadow(0 0 calc(1px * var(--r)) rgba(255, 255, 255, 0.95)) drop-shadow(0 0 calc(1px * var(--r)) rgba(255, 255, 255, 0.7)); }
+.ni-bubble .px { width: calc(16px * var(--u)); height: calc(16px * var(--u)); transition: width 0.34s var(--ease), height 0.34s var(--ease); }
+.ni-bubble.is-grown .px { width: calc(16px * var(--ug)); height: calc(16px * var(--ug)); }
+.ni-dot { position: absolute; top: 0; right: 0; width: calc(8px * var(--r)); height: calc(8px * var(--r)); border-radius: 50%; background: var(--red); box-shadow: 0 0 0 calc(1.5px * var(--r)) #000; opacity: 0; transform: scale(0.4); transition: opacity 0.2s, transform 0.3s var(--ease); }
+.ni-bubble.has-dot .ni-dot { opacity: 1; transform: none; }
+.ni-meter { position: absolute; left: calc(3px * var(--r)); right: calc(3px * var(--r)); bottom: calc(-1px * var(--r)); height: calc(2px * var(--r)); overflow: hidden; border-radius: calc(1px * var(--r)); background: rgba(255, 255, 255, 0.2); opacity: 0; transition: opacity 0.2s; }
+.ni-meter::after { content: ""; display: block; width: var(--p, 0%); height: 100%; border-radius: inherit; background: var(--accent); transition: width 0.5s var(--ease); }
+.ni-bubble.has-meter .ni-meter { opacity: 1; }
+
+.ni-card { position: absolute; top: calc(var(--row) * var(--r) * 1px); left: calc(var(--cw) * var(--r) * -0.5px); display: flex; align-items: center; gap: calc(8px * var(--r)); width: calc(var(--cw) * var(--r) * 1px); height: calc(var(--ch) * var(--r) * 1px); padding: calc(2px * var(--r)) calc(12px * var(--r)) calc(10px * var(--r)); opacity: 0; transform: translateY(calc(-6px * var(--r))); pointer-events: none; transition: opacity 0.12s linear, transform 0.12s linear; }
+.ni.is-open .ni-card { opacity: 1; transform: none; pointer-events: auto; transition: opacity 0.26s 0.08s var(--ease), transform 0.26s 0.08s var(--ease); }
+.ni-card-main { flex: 1; display: flex; align-items: center; gap: calc(10px * var(--r)); min-width: 0; padding: calc(3px * var(--r)) calc(8px * var(--r)) calc(3px * var(--r)) calc(4px * var(--r)); }
+.ni-card-sprite { flex: none; display: grid; place-items: center; width: calc(40px * var(--r)); height: calc(40px * var(--r)); }
+.ni-card-sprite .px { width: calc(16px * var(--uc)); height: calc(16px * var(--uc)); }
+.ni-card-text, .ni-summary { display: block; min-width: 0; }
+.ni-summary { flex: 1; padding-left: calc(6px * var(--r)); }
+.ni-card-title, .ni-card-sub { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ni-card-title { font-size: calc(13px * var(--r)); font-weight: 600; line-height: 1.3; }
+.ni-card-sub { font-size: calc(11.5px * var(--r)); line-height: 1.35; color: rgba(255, 255, 255, 0.55); }
+.ni-card-sub b { font-weight: 500; color: rgba(255, 255, 255, 0.8); }
+.ni-card-sub b.is-asking { color: var(--orange); }
+.ni-card-sub b.is-done { color: var(--green); }
+.ni-round { flex: none; display: grid; place-items: center; width: calc(30px * var(--r)); height: calc(30px * var(--r)); border-radius: 50%; color: rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.12); }
+.ni-round svg { width: calc(18px * var(--r)); height: calc(18px * var(--r)); }
+.ni-round.is-progress { color: #fff; background: var(--accent); }
+.ni-round.is-progress svg { width: calc(13px * var(--r)); height: calc(13px * var(--r)); }
+
+/* The two words under the wings, as in the film */
+.ni-tag { position: absolute; top: calc((var(--row) + 7) * var(--r) * 1px); left: calc(var(--tx) * var(--r) * 1px); display: flex; flex-direction: column; align-items: center; gap: calc(3.5px * var(--r)); width: calc(var(--tw) * var(--r) * 1px); font-size: max(11px, calc(7.5px * var(--r))); font-weight: 700; letter-spacing: 0.02em; line-height: 1.2; white-space: nowrap; transition: opacity 0.25s, left 0.34s var(--ease), width 0.34s var(--ease); }
+.ni-tag i { width: 100%; height: calc(1.5px * var(--r)); border-radius: 1px; background: currentColor; }
+.ni-tag.is-green { color: var(--green); }
+.ni-tag.is-blue { color: var(--accent-text); }
+.ni.is-open .ni-tag, .ni.is-folded .ni-tag { opacity: 0; }
+
+/* ── The film, first ────────────────────────────────────────────────────────── */
+main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
+.hero { position: relative; isolation: isolate; padding-top: clamp(20px, 3vw, 40px); }
+.hero::before { content: ""; position: absolute; z-index: -1; inset: calc(-1 * var(--bar)) 0 auto; height: min(820px, 100%); pointer-events: none; background: radial-gradient(60% 64% at 50% 0%, rgba(63, 95, 124, 0.5), rgba(31, 51, 71, 0.22) 55%, transparent 100%), radial-gradient(36% 30% at 50% 36%, rgba(240, 178, 124, 0.06), transparent 100%); }
+.film { position: relative; width: min(100%, max(520px, calc((100vh - var(--bar) - 200px) * 16 / 9))); width: min(100%, max(520px, calc((100svh - var(--bar) - 200px) * 16 / 9))); margin-inline: auto; aspect-ratio: 16 / 9; overflow: hidden; border-radius: clamp(14px, 2vw, 22px); background: #0b0d10; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 40px 110px -40px rgba(0, 0, 0, 0.9), 0 0 160px -40px rgba(63, 95, 124, 0.55); }
+.film video { width: 100%; height: 100%; object-fit: cover; }
+.film-start { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; width: 100%; padding: 0 0 clamp(14px, 4.4%, 46px); border: 0; background: linear-gradient(180deg, transparent 58%, rgba(0, 0, 0, 0.4)); cursor: pointer; }
+.film-pill { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 18px 0 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.95); color: #000; font-size: 15px; font-weight: 600; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45); transition: transform 0.3s var(--ease); }
+.film-pill svg { width: 15px; height: 15px; transition: transform 0.3s var(--ease); }
+.film-pill small { padding-left: 10px; border-left: 1px solid rgba(0, 0, 0, 0.16); font: 500 12.5px/1.6 var(--mono); color: rgba(0, 0, 0, 0.58); }
+.film-start:active .film-pill { transform: scale(0.97); }
+@media (max-width: 520px) { .film-pill { height: 40px; font-size: 14px; } }
+
+.chapters { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 980px; margin: clamp(16px, 2vw, 24px) auto 0; }
+.chapters button { display: inline-flex; align-items: center; gap: 8px; flex: none; height: 32px; padding: 0 13px 0 11px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.07); color: var(--label-2); font-size: 13px; cursor: pointer; white-space: nowrap; transition: background-color 0.15s, color 0.15s; }
+.chapters time { font: 500 12px/1 var(--mono); color: var(--label-3); transition: color 0.15s; }
+.chapters button[aria-current] { background: rgba(10, 132, 255, 0.24); color: #fff; }
+.chapters button[aria-current] time { color: #8cc4ff; }
+@media (max-width: 760px) {
+  .chapters { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding-inline: var(--gutter); }
+  .chapters::-webkit-scrollbar { display: none; }
+  .chapters button { scroll-snap-align: start; }
+}
+
+.intro { max-width: 860px; margin-inline: auto; padding-block: clamp(48px, 7vw, 96px) clamp(24px, 4vw, 56px); text-align: center; }
+.lede { max-width: 36em; margin: 22px auto 0; font-size: clamp(18px, 2vw, 22px); line-height: 1.45; color: var(--label-2); text-wrap: pretty; }
+.intro-go { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; margin-top: 30px; }
+.fine { margin-top: 14px; font-size: 13px; color: var(--label-3); }
+
+/* ── The steps ──────────────────────────────────────────────────────────────── */
+.step { padding-block: clamp(52px, 7.5vw, 104px); }
+.step-text > p { max-width: 34em; margin-top: 18px; font-size: clamp(17px, 1.55vw, 19px); color: var(--label-2); text-wrap: pretty; }
+.tc { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px 0 9px; margin: 0 0 18px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.07); color: var(--label-2); font: 500 12.5px/1 var(--mono); cursor: pointer; transition: background-color 0.15s, color 0.15s; }
+.tc svg { width: 10px; height: 10px; transition: transform 0.3s var(--ease); }
+
+.split-in { display: grid; align-items: center; gap: clamp(28px, 5vw, 72px); }
+.split h2 { font-size: clamp(30px, 3.5vw, 44px); }
+.wide > .wrap > .step-text { max-width: 860px; margin: 0 auto clamp(28px, 4vw, 48px); text-align: center; }
+.wide > .wrap > .step-text > p { margin-inline: auto; }
+@media (min-width: 900px) {
+  .split-in { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .split.is-flip .step-text { order: 2; }
+  .split.is-flip .split-in { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .split.is-tall .split-in { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+}
+
+.points { display: grid; gap: 16px; margin-top: 26px; }
+.points li { position: relative; padding-left: 30px; }
+.points li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 14px; height: 14px; border-radius: 50%; border: 3.5px solid var(--accent); }
+.points b { display: block; font-size: 17px; font-weight: 600; }
+.points span { display: block; font-size: 15.5px; color: var(--label-2); }
+.step-text > .note { margin-top: 24px; font-size: 14.5px; color: var(--label-3); }
+
+/* A scene of the film without its words: a still picture, moving while the mouse is over it */
+.clip { position: relative; aspect-ratio: var(--ar); overflow: hidden; border-radius: 20px; background: #0a0a0c; box-shadow: 0 0 0 1px var(--line); }
+.clip img, .clip video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.clip video { opacity: 0; transition: opacity 0.3s linear; }
+.clip.is-on video { opacity: 1; }
+.clip-toggle { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: rgba(28, 28, 30, 0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: #fff; cursor: pointer; transition: background-color 0.2s, transform 0.25s var(--ease); }
+.clip-toggle svg { width: 13px; height: 13px; }
+.clip-toggle .is-pause, .clip-toggle[aria-pressed="true"] .is-play { display: none; }
+.clip-toggle[aria-pressed="true"] .is-pause { display: block; }
+.clip-toggle:active { transform: scale(0.92); }
+.split.is-tall .clip { width: min(100%, 470px); margin-inline: auto; }
+
+/* The top of a Mac's screen, where the island lives */
+.stage { position: relative; isolation: isolate; height: calc(var(--sh, 150) * var(--r) * 1px); overflow: hidden; background: linear-gradient(180deg, #101b27 0%, #1a2b3c 60%, #27405a 100%); }
+.stage.is-box { border-radius: 24px; box-shadow: 0 0 0 1px var(--line); }
+.stage-menu { position: absolute; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; height: calc(33px * var(--r)); font-size: calc(13.5px * var(--r)); color: rgba(255, 255, 255, 0.82); white-space: nowrap; background: rgba(22, 30, 42, 0.42); }
+.stage-menu > span { display: flex; align-items: center; overflow: hidden; }
+.stage-menu-l { gap: calc(21px * var(--r)); width: calc(var(--ml, 0) * 1px); padding-left: calc(20px * var(--r)); -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent); }
+.stage-menu-r { justify-content: flex-end; width: calc(var(--mr, 0) * 1px); padding-right: calc(16px * var(--r)); font-variant-numeric: tabular-nums; -webkit-mask-image: linear-gradient(270deg, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(270deg, #000 calc(100% - 48px), transparent); }
+.stage-menu i { flex: none; width: calc(12px * var(--r)); height: calc(12px * var(--r)); border-radius: 50%; background: rgba(255, 255, 255, 0.78); }
+.stage-menu b { font-weight: 700; }
+.stage-hint { position: absolute; inset: auto 0 calc(9px * var(--r)); text-align: center; font-size: 13px; color: rgba(255, 255, 255, 0.5); pointer-events: none; }
+
+.pair-in { display: grid; gap: 20px; }
+@media (min-width: 860px) { .pair-in { grid-template-columns: 1fr 1fr; } }
+.tile { display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); transition: box-shadow 0.3s; }
+.tile .clip { border-radius: 0; box-shadow: 0 1px 0 var(--line); }
+.tile .step-text { padding: clamp(22px, 3vw, 36px); }
+.tile h2 { font-size: clamp(25px, 2.7vw, 32px); letter-spacing: -0.025em; line-height: 1.12; }
+.tile .step-text > p { margin-top: 12px; font-size: 16.5px; }
+
+/* ── Skins ──────────────────────────────────────────────────────────────────── */
+.skins { padding: clamp(14px, 2.6vw, 30px); border-radius: 24px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.tabs { display: flex; gap: 2px; width: fit-content; max-width: 100%; margin: 0 auto clamp(14px, 2.4vw, 26px); padding: 4px; overflow-x: auto; scrollbar-width: none; border-radius: 999px; background: rgba(255, 255, 255, 0.07); }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { flex: none; height: 34px; padding: 0 clamp(11px, 2.4vw, 18px); border: 0; border-radius: 999px; background: transparent; color: var(--label-2); font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color 0.2s, color 0.2s; }
+.tabs button:focus-visible { outline-offset: -2px; }
+@media (max-width: 360px) { .tabs button { padding: 0 8px; font-size: 13px; } }
+.tabs button[aria-selected="true"] { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.skin-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.skin { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 4px 14px; border-radius: 16px; background: rgba(255, 255, 255, 0.035); transition: background-color 0.2s; }
+.skin-px { display: block; }
+.skin .px { width: calc(16px * var(--su, 4)); height: calc(16px * var(--su, 4)); }
+.skin-name { font-size: 12.5px; line-height: 1.25; color: var(--label-2); text-align: center; }
+@media (max-width: 860px) { .skin-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .skin-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .skin { padding-top: 18px; } }
+.draw { margin-top: clamp(44px, 6vw, 80px); }
+.draw h2 { font-size: clamp(27px, 3.4vw, 40px); }
+
+/* ── How it works ───────────────────────────────────────────────────────────── */
+.hooks { padding: clamp(16px, 3.4vw, 40px); border-radius: 24px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.flow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 0.9fr) minmax(0, 1fr); align-items: center; }
+.node { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 14px; padding: 18px; border-radius: 18px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); }
+.node-ico { grid-row: span 2; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: #000; box-shadow: 0 0 0 1px var(--line); font: 600 15px var(--mono); color: var(--label); }
+.node-ico img { width: 46px; height: 46px; }
+.node b { align-self: end; font-size: 16px; font-weight: 600; line-height: 1.25; }
+.node small { align-self: start; font-size: 13px; line-height: 1.3; color: var(--label-3); }
+.node-out { grid-column: 1 / -1; display: flex; align-items: center; min-height: 40px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); font: 500 13px var(--mono); color: var(--label-2); }
+.status { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px 0 9px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 18%, transparent); color: var(--tone); font: 600 12.5px var(--font); white-space: nowrap; }
+.status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.hooks[data-tone="blue"] { --tone: var(--accent-text); }
+.hooks[data-tone="orange"] { --tone: var(--orange); }
+.hooks[data-tone="green"] { --tone: var(--green); }
+.wire { position: relative; height: 46px; }
+.wire::before { content: ""; position: absolute; inset: 50% 0 auto; border-top: 1.5px dashed rgba(255, 255, 255, 0.24); }
+.wire-label { position: absolute; left: 50%; top: 50%; padding: 3px 10px; border-radius: 999px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); font: 500 12.5px var(--mono); color: var(--label-2); white-space: nowrap; transform: translate(-50%, -50%); }
+.packet { position: absolute; left: 0; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 14px var(--tone); opacity: 0; }
+.events { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: clamp(14px, 2.4vw, 24px); }
+.events button { display: block; padding: 13px 14px; border: 0; border-radius: 14px; background: rgba(255, 255, 255, 0.045); box-shadow: 0 0 0 1px transparent; text-align: left; cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; }
+.events code { display: block; padding: 0; background: none; font-size: 13.5px; font-weight: 600; color: var(--label); overflow: hidden; text-overflow: ellipsis; }
+.events span { display: block; margin-top: 3px; font-size: 13px; line-height: 1.35; color: var(--label-3); }
+.events button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.09); box-shadow: 0 0 0 1px var(--line-2); }
+@media (max-width: 760px) {
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .wire { height: 62px; }
+  .wire::before { inset: 0 auto 0 50%; border-top: 0; border-left: 1.5px dashed rgba(255, 255, 255, 0.24); }
+  .packet { left: 50%; top: 0; }
+  .events { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.local { margin-top: clamp(40px, 6vw, 72px); text-align: center; }
+.local h3 { font: 600 clamp(26px, 3.4vw, 40px)/1.1 var(--display); letter-spacing: -0.03em; }
+.local p { max-width: 34em; margin: 14px auto 0; color: var(--label-2); text-wrap: pretty; }
+.facts { display: grid; gap: 14px; margin-top: clamp(26px, 4vw, 44px); }
+@media (min-width: 820px) { .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.facts li { padding: 22px; border-radius: 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); transition: transform 0.3s var(--ease), background-color 0.3s, box-shadow 0.3s; }
+.facts b { display: block; font-size: 17px; font-weight: 600; }
+.facts p { margin-top: 6px; font-size: 15.5px; color: var(--label-2); }
+
+/* ── Download ───────────────────────────────────────────────────────────────── */
+.get { position: relative; isolation: isolate; padding-block: clamp(64px, 9vw, 128px) clamp(56px, 7vw, 96px); text-align: center; }
+.get::before { content: ""; position: absolute; z-index: -1; inset: 0; pointer-events: none; background: radial-gradient(50% 30% at 50% 30%, rgba(10, 132, 255, 0.15), transparent 100%); }
+.get-icon { width: 104px; height: 104px; margin: 0 auto 18px; }
+.get-ver { margin-top: 14px; font-size: 17px; color: var(--label-2); }
+.get-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 384px)); justify-content: center; gap: 14px; margin-top: 34px; }
+@media (max-width: 800px) { .get-buttons { grid-template-columns: minmax(0, 420px); } }
+@media (max-width: 420px) { .dl-arrow { display: none; } }
+.dl { display: flex; align-items: center; gap: 16px; padding: 16px 20px 16px 18px; border-radius: 20px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--label); text-align: left; text-decoration: none; transition: background-color 0.2s, transform 0.25s var(--ease); }
+.dl.is-main { order: -1; background: var(--accent-fill); box-shadow: none; color: #fff; }
+.dl-ico { flex: none; width: 48px; height: 34px; overflow: visible; }
+.dl-ico * { vector-effect: non-scaling-stroke; }
+.dl-ico .bit { transition: transform 0.4s var(--ease); }
+.dl-text { flex: 1; min-width: 0; }
+.dl b { display: block; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.dl small { display: block; margin-top: 2px; font-size: 13px; color: var(--label-2); }
+.dl.is-main small { color: rgba(255, 255, 255, 0.82); }
+.dl-arrow { flex: none; width: 18px; height: 18px; opacity: 0.7; transition: transform 0.3s var(--ease), opacity 0.2s; }
+.dl:active { transform: scale(0.98); }
+.get-note { width: fit-content; max-width: 100%; margin: 18px auto 0; padding: 9px 16px; border-radius: 14px; background: rgba(255, 159, 10, 0.14); color: #ffc266; font-size: 14.5px; }
+.get-need { margin-top: 20px; font-size: 14.5px; color: var(--label-3); }
+.install { display: grid; gap: 14px; margin-top: clamp(40px, 6vw, 64px); text-align: left; counter-reset: n; }
+@media (min-width: 820px) { .install { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.install li { counter-increment: n; padding: 22px; border-radius: 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); transition: transform 0.3s var(--ease), background-color 0.3s, box-shadow 0.3s; }
+.install li::before { content: counter(n); display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 14px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); font: 600 13px var(--mono); transition: background-color 0.3s, color 0.3s; }
+.install b { display: block; font-size: 17px; font-weight: 600; }
+.install p { margin-top: 6px; font-size: 15.5px; color: var(--label-2); }
+.first { margin-top: 14px; border-radius: 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); text-align: left; }
+.first summary { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 20px; font-weight: 600; cursor: pointer; list-style: none; }
+.first summary::-webkit-details-marker { display: none; }
+.first summary > span { flex: 1; min-width: 0; }
+.first summary i { font-style: normal; font-weight: 400; color: var(--label-3); }
+.first summary::after { content: ""; flex: none; width: 9px; height: 9px; margin: -4px 4px 0; border: solid var(--label-2); border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform 0.3s var(--ease); }
+.first[open] summary::after { margin-top: 4px; transform: rotate(225deg); }
+.first-in { display: grid; gap: 22px 40px; padding: 4px 22px 24px; }
+@media (min-width: 820px) { .first-in { grid-template-columns: 1fr 1fr; } }
+.first h3 { font-size: 15px; font-weight: 600; }
+.first p { margin-top: 6px; font-size: 15.5px; color: var(--label-2); }
+.first code { display: block; width: fit-content; max-width: 100%; margin-top: 8px; padding: 8px 12px; border-radius: 10px; white-space: normal; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
+
+.foot { padding-block: 28px calc(44px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); text-align: center; font-size: 13px; color: var(--label-3); }
+.foot p + p { margin-top: 6px; }
+.foot a { color: var(--label-2); text-decoration: none; }
+
+/* ── What moves ─────────────────────────────────────────────────────────────── */
+@keyframes hop { 40% { transform: translateY(calc(-3px * var(--r))); } }
+@keyframes stepA { 0% { visibility: visible; } 50% { visibility: hidden; } }
+@keyframes stepB { 0% { visibility: hidden; } 50% { visibility: visible; } }
+@keyframes asks { 50% { box-shadow: 0 0 0 calc(1.5px * var(--r)) var(--orange), 0 0 0 calc(4px * var(--r)) color-mix(in srgb, var(--orange) 35%, transparent); } }
+@keyframes packetX { 0% { left: 0; opacity: 0; } 14%, 84% { opacity: 1; } 100% { left: 100%; opacity: 0; } }
+@keyframes packetY { 0% { top: 0; opacity: 0; } 14%, 84% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+@keyframes settle { from { opacity: 0.4; transform: scale(0.94); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ni-bubble.is-asking { animation: asks 1.6s ease-in-out infinite; }
+  .is-awake .ni-bubble.is-working .f0, .is-walking .f0 { visibility: hidden; }
+  .is-awake .ni-bubble.is-working .f1, .is-walking .f1 { animation: stepA 0.48s step-end infinite; }
+  .is-awake .ni-bubble.is-working .f2, .is-walking .f2 { animation: stepB 0.48s step-end infinite; }
+  .skin-grid.is-new .skin { animation: pop 0.4s var(--ease) both; animation-delay: calc(var(--i) * 18ms); }
+  .wire.is-sending .packet { animation: packetX 0.62s cubic-bezier(0.45, 0, 0.3, 1) both; }
+  .status.is-new { animation: settle 0.35s var(--ease); }
+  .get-note { animation: pop 0.35s var(--ease); }
+  @media (max-width: 760px) { .wire.is-sending .packet { animation-name: packetY; } }
+}
+@media (hover: hover) and (pointer: fine) {
+  .if-mouse { display: inline; }
+  .if-touch { display: none; }
+  .btn.is-main:hover, .bar-get:hover, .dl.is-main:hover { background-color: #0a84ff; }
+  .btn.is-quiet:hover svg { transform: translateY(2px); }
+  .brand:hover { color: #fff; }
+  .film-start:hover .film-pill { transform: scale(1.04); }
+  .film-start:hover .film-pill svg { transform: translateX(1.5px) scale(1.1); }
+  .chapters button:hover { background: rgba(255, 255, 255, 0.13); color: #fff; }
+  .chapters button[aria-current]:hover { background: rgba(10, 132, 255, 0.34); }
+  .tc:hover { background: rgba(10, 132, 255, 0.24); color: #fff; }
+  .tc:hover svg { transform: translateX(1.5px) scale(1.15); }
+  .ni.is-live .ni-bubble:hover { background-color: rgba(255, 255, 255, 0.14); }
+  .clip-toggle:hover { background: rgba(60, 60, 64, 0.8); }
+  .tabs button:hover { color: #fff; }
+  .skin:hover { background: rgba(255, 255, 255, 0.075); }
+  .events button:hover { background: rgba(255, 255, 255, 0.09); }
+  .tile:hover { box-shadow: 0 0 0 1px var(--line-2); }
+  .facts li:hover, .install li:hover { transform: translateY(-3px); background-color: #151518; box-shadow: 0 0 0 1px var(--line-2), 0 24px 44px -30px #000; }
+  .install li:hover::before { background-color: var(--accent-fill); color: #fff; }
+  .dl:not(.is-main):hover { background: #232327; }
+  .dl:hover .dl-arrow { opacity: 1; transform: translateY(2px); }
+  .dl:hover .bit.is-l { transform: translateX(-7px); }
+  .dl:hover .bit.is-r { transform: translateX(7px); }
+  .dl:hover .bit.is-up { transform: translateY(-2.5px); }
+  .dl:hover .bit.is-up + .bit.is-up { transition-delay: 0.06s; }
+  .dl:hover .bit.is-up + .bit.is-up + .bit.is-up { transition-delay: 0.12s; }
+  .foot a:hover { color: #fff; }
+  .first summary:hover { color: #fff; }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .ni.is-live .ni-bubble:hover .ni-sprite, .skin:hover .skin-px { animation: hop 0.3s ease-out; }
+  .skin:hover .f0 { visibility: hidden; }
+  .skin:hover .f1 { animation: stepA 0.48s step-end infinite; }
+  .skin:hover .f2 { animation: stepB 0.48s step-end infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; transition-delay: 0s !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in wrap">
+    <a class="brand" href="#top" aria-label="VSCodeWorkers, haut de la page"><img src="media/icon-64.png" width="26" height="26" alt=""><span>VSCodeWorkers</span></a>
+    <a class="bar-get" href="#telecharger" aria-label="Télécharger VSCodeWorkers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5.5 19.5h13"/></svg>
+      <span>Télécharger</span>
+    </a>
+  </div>
+  <div class="ni" id="island" role="img" aria-label="L’encoche vue par VSCodeWorkers : deux discussions terminées à gauche de la caméra, trois en cours à droite."></div>
+</header>
+
+<main>
+  <section class="hero" aria-label="Le film de présentation">
+    <div class="wrap">
+      <figure class="film" id="film-frame">
+        <video id="film" playsinline controls preload="none" poster="media/film.webp" aria-label="Film de présentation de VSCodeWorkers, 1 minute 08, avec le son">
+          <source src="media/film.mp4" type="video/mp4">
+        </video>
+        <button class="film-start" id="film-start" type="button">
+          <span class="film-pill">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>
+            <span id="film-start-text">Regarder le film</span>
+            <small>1 min 08</small>
+          </span>
+        </button>
+      </figure>
+
+      <nav class="chapters" id="chapters" aria-label="Chapitres du film">
+        <button type="button" data-t="0"><time>0:00</time>Cinq discussions</button>
+        <button type="button" data-t="6.4"><time>0:06</time>L’encoche</button>
+        <button type="button" data-t="15.5"><time>0:15</time>C’est fini</button>
+        <button type="button" data-t="20"><time>0:20</time>Claude t’attend</button>
+        <button type="button" data-t="30"><time>0:30</time>Résumé et projets récents</button>
+        <button type="button" data-t="34.8"><time>0:34</time>Progression</button>
+        <button type="button" data-t="43.6"><time>0:43</time>Mode discret</button>
+        <button type="button" data-t="47.1"><time>0:47</time>Skins</button>
+        <button type="button" data-t="52.6"><time>0:52</time>Barre et mode Libre</button>
+        <button type="button" data-t="60"><time>1:00</time>Comment ça marche</button>
+      </nav>
+
+      <div class="intro">
+        <h1>Garde un œil sur tes agents.</h1>
+        <p class="lede">VSCodeWorkers donne un petit personnage à chacune de tes discussions Claude&nbsp;Code et les range autour de l’encoche de ton Mac. D’un coup d’œil, tu sais laquelle a fini, et laquelle t’attend.</p>
+        <div class="intro-go">
+          <a class="btn is-main" href="#telecharger">Télécharger</a>
+          <a class="btn is-quiet" href="#etapes">Tout voir, étape par étape
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          </a>
+        </div>
+        <p class="fine">Gratuit · Version <span data-version>1.1.0</span> · macOS et Windows</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step split" id="etapes" aria-labelledby="s-probleme">
+    <div class="wrap split-in">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="0" aria-label="Voir ce passage du film, à 0:00"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:00</time></button>
+        <h2 id="s-probleme">Cinq discussions Claude&nbsp;Code. <span class="dim">Laquelle a fini&nbsp;? Laquelle t’attend&nbsp;?</span></h2>
+        <p>Chaque discussion vit dans sa fenêtre VS&nbsp;Code. Dès que tu en lances plusieurs, tu passes ton temps à faire le tour des fenêtres pour savoir où elles en sont.</p>
+      </div>
+      <figure class="clip" data-clip="probleme" style="--ar: 16 / 9">
+        <img src="media/probleme.webp" width="1600" height="900" loading="lazy" decoding="async" alt="Un Mac avec cinq fenêtres VS Code qui se chevauchent, chacune avec sa discussion Claude Code.">
+        <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step wide" id="encoche" aria-labelledby="s-encoche">
+    <div class="wrap">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="6.4" aria-label="Voir ce passage du film, à 0:06"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:06</time></button>
+        <h2 id="s-encoche">Une bulle par discussion. <span class="dim">Terminées à gauche, en cours à droite.</span></h2>
+        <p>VSCodeWorkers fait de l’encoche de ton Mac une petite île noire. À gauche de la caméra, les discussions qui ont fini ou qui t’attendent. À droite, celles où Claude travaille encore, avec un trait bleu qui avance au rythme de son plan.</p>
+      </div>
+      <div class="stage is-box" data-stage="sides" style="--sh: 150">
+        <div class="ni" role="img" aria-label="L’île autour de l’encoche : deux discussions terminées à gauche de la caméra, trois en cours à droite."></div>
+        <p class="stage-hint"><span class="if-mouse">Survole une bulle, ou la caméra</span><span class="if-touch">Touche une bulle, ou la caméra</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step pair" aria-label="Quand une discussion a besoin de toi">
+    <div class="wrap pair-in">
+      <article class="tile">
+        <div class="stage" data-stage="done" style="--sh: 142">
+          <div class="ni" role="img" aria-label="La bulle de la discussion terminée est passée à gauche et a grossi ; sa carte est descendue : Refonte du panier, boutique-web, Terminé."></div>
+        </div>
+        <div class="step-text">
+          <button class="tc" type="button" data-t="15.5" aria-label="Voir ce passage du film, à 0:15"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:15</time></button>
+          <h2>C’est fini&nbsp;? <span class="dim">Sa carte descend de l’encoche.</span></h2>
+          <p>Quand Claude termine, la bulle passe à gauche, grossit, et sa carte descend quelques secondes&nbsp;: la discussion, son projet, «&nbsp;Terminé&nbsp;». Une pastille rouge reste tant que tu n’es pas allé voir.</p>
+        </div>
+      </article>
+      <article class="tile">
+        <div class="stage" data-stage="ask" style="--sh: 142">
+          <div class="ni" role="img" aria-label="La bulle de la discussion qui attend est cerclée d’orange ; sa carte dit : Migration Postgres, serveur-data, Attend ta confirmation."></div>
+        </div>
+        <div class="step-text">
+          <button class="tc" type="button" data-t="20" aria-label="Voir ce passage du film, à 0:20"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:20</time></button>
+          <h2>Claude t’attend&nbsp;? <span class="dim">La bulle grossit et t’appelle.</span></h2>
+          <p>Une commande à autoriser, une question à trancher&nbsp;: la bulle se cercle d’orange et bat doucement jusqu’à ta réponse. Sa carte dit «&nbsp;Attend ta confirmation&nbsp;».</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="step split is-flip" aria-labelledby="s-clic">
+    <div class="wrap split-in">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="24.4" aria-label="Voir ce passage du film, à 0:24"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:24</time></button>
+        <h2 id="s-clic">Un clic&nbsp;: <span class="dim">la bonne fenêtre passe devant.</span></h2>
+        <p>Clique une bulle&nbsp;: la fenêtre VS&nbsp;Code de cette discussion passe au premier plan, là où Claude t’attend. Un deuxième clic la réduit. Un clic droit retire la bulle.</p>
+      </div>
+      <figure class="clip" data-clip="clic" style="--ar: 16 / 9">
+        <img src="media/clic.webp" width="1600" height="900" loading="lazy" decoding="async" alt="La fenêtre VS Code de la discussion qui attend est passée au premier plan : Claude y demande l’autorisation de lancer une commande.">
+        <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step split" aria-labelledby="s-resume">
+    <div class="wrap split-in">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="30" aria-label="Voir ce passage du film, à 0:30"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:30</time></button>
+        <h2 id="s-resume">Survole l’encoche. <span class="dim">Le résumé, tes projets récents, une nouvelle fenêtre.</span></h2>
+        <p>D’un survol, le compte&nbsp;: combien attendent ta confirmation, combien travaillent, combien ont fini. Juste à côté, deux boutons&nbsp;: tes projets récents, dossiers locaux ou serveurs en SSH, et une nouvelle fenêtre VS&nbsp;Code.</p>
+      </div>
+      <figure class="clip" data-clip="recents" style="--ar: 5 / 4">
+        <img src="media/recents.webp" width="1200" height="960" loading="lazy" decoding="async" alt="Sous l’encoche, la liste des projets récents : des dossiers locaux et un serveur en SSH.">
+        <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step split is-flip is-tall" aria-labelledby="s-progression">
+    <div class="wrap split-in">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="34.8" aria-label="Voir ce passage du film, à 0:34"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:34</time></button>
+        <h2 id="s-progression">Où en est Claude&nbsp;?</h2>
+        <p>Le bouton bleu d’une carte ouvre le panneau de progression de la discussion.</p>
+        <ul class="points">
+          <li><b>Le plan, étape par étape</b><span>Chaque étape se coche quand elle est finie, avec le temps qu’elle a pris.</span></li>
+          <li><b>Les sous-agents au travail</b><span>Ce que fait chacun, et depuis combien de temps.</span></li>
+          <li><b>L’heure de fin estimée</b><span>Recalculée d’après le temps réellement passé.</span></li>
+        </ul>
+        <p class="note">Pour ça, l’app ajoute un petit skill à Claude&nbsp;Code&nbsp;: Claude annonce son plan et ses estimations, l’app suit le reste.</p>
+      </div>
+      <figure class="clip" data-clip="progression" style="--ar: 20 / 27">
+        <img src="media/progression.webp" width="800" height="1080" loading="lazy" decoding="async" alt="Le panneau de progression : fin estimée vers 14:32, les étapes du plan cochées une à une, deux sous-agents au travail.">
+        <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+      </figure>
+    </div>
+  </section>
+
+  <section class="step split" aria-labelledby="s-discret">
+    <div class="wrap split-in">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="43.6" aria-label="Voir ce passage du film, à 0:43"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:43</time></button>
+        <h2 id="s-discret">Mode discret. <span class="dim">Seules les bulles qui ont besoin de toi restent.</span></h2>
+        <p>Décoche «&nbsp;Toujours afficher les bulles&nbsp;» dans les options&nbsp;: l’encoche redevient une encoche. Seules les discussions qui ont besoin de toi en sortent&nbsp;; les autres reviennent dès que la souris passe dessus.</p>
+      </div>
+      <div class="stage is-box" data-stage="discret" style="--sh: 176">
+        <div class="ni" role="img" aria-label="En mode discret, une seule bulle reste à côté de l’encoche : celle de la discussion terminée que tu n’as pas encore vue."></div>
+        <p class="stage-hint"><span class="if-mouse">Survole pour faire revenir les autres</span><span class="if-touch">Touche pour faire revenir les autres</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step wide" aria-labelledby="s-skins">
+    <div class="wrap">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="47.1" aria-label="Voir ce passage du film, à 0:47"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:47</time></button>
+        <h2 id="s-skins">48 skins. <span class="dim">Blobs, ouvriers, robots, animaux.</span></h2>
+        <p>Chaque discussion a son personnage. Choisis une série&nbsp;: l’encoche, en haut de la page, change avec.</p>
+      </div>
+      <div class="skins">
+        <div class="tabs" id="skin-tabs" role="tablist" aria-label="Séries de skins">
+          <button type="button" role="tab" aria-selected="true" aria-controls="skin-grid">Blobs</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="skin-grid" tabindex="-1">Ouvriers</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="skin-grid" tabindex="-1">Robots</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="skin-grid" tabindex="-1">Animaux</button>
+        </div>
+        <ul class="skin-grid" id="skin-grid" role="tabpanel" aria-label="Les douze skins de la série"></ul>
+      </div>
+
+      <div class="draw split is-flip">
+        <div class="split-in">
+          <div class="step-text">
+            <button class="tc" type="button" data-t="49.8" aria-label="Voir ce passage du film, à 0:49"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:49</time></button>
+            <h2>Ou dessine les tiens.</h2>
+            <p>L’app a son éditeur, 16&nbsp;×&nbsp;16 pixels. Chaque pixel posé change le personnage en direct, jusque dans l’encoche.</p>
+          </div>
+          <figure class="clip" data-clip="editeur" data-cast="foxes" style="--ar: 5 / 4">
+            <img src="media/editeur.webp" width="1200" height="960" loading="lazy" decoding="async" alt="L’éditeur de skins : un renard dessiné pixel par pixel, et des renards de toutes les couleurs à la place des personnages dans l’encoche.">
+            <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="step pair" aria-label="Sans encoche">
+    <div class="wrap pair-in">
+      <article class="tile">
+        <figure class="clip" data-clip="barre" style="--ar: 16 / 9">
+          <img src="media/barre.webp" width="1600" height="900" loading="lazy" decoding="async" alt="Les discussions en onglets, dans une barre en bas de l’écran.">
+          <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+        </figure>
+        <div class="step-text">
+          <button class="tc" type="button" data-t="52.6" aria-label="Voir ce passage du film, à 0:52"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:52</time></button>
+          <h2>Pas d’encoche&nbsp;? <span class="dim">Une barre, sur le bord que tu veux.</span></h2>
+          <p>Sous Windows, ou sur Mac si tu préfères&nbsp;: un onglet par discussion, en bas, en haut, à gauche ou à droite de l’écran. Et sur un Mac sans encoche, l’île se pose au milieu de la barre des menus.</p>
+        </div>
+      </article>
+      <article class="tile">
+        <figure class="clip" data-clip="libre" style="--ar: 16 / 9">
+          <img src="media/libre.webp" width="1600" height="900" loading="lazy" decoding="async" alt="Des personnages posés librement sur l’écran, chacun avec le nom de son projet.">
+          <button class="clip-toggle" type="button" aria-pressed="false" aria-label="Animer l’extrait"><svg class="is-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><svg class="is-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4.4" height="15" rx="1.2"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.2"/></svg></button>
+        </figure>
+        <div class="step-text">
+          <button class="tc" type="button" data-t="57.1" aria-label="Voir ce passage du film, à 0:57"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>0:57</time></button>
+          <h2>Ou en liberté sur ton écran. <span class="dim">Mode Libre · bêta</span></h2>
+          <p>Un personnage par fenêtre VS&nbsp;Code, qui se balade sur ton écran. Tes clics passent à travers, et tu peux lui tracer un périmètre.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="step wide" aria-labelledby="s-hooks">
+    <div class="wrap">
+      <div class="step-text">
+        <button class="tc" type="button" data-t="60" aria-label="Voir ce passage du film, à 1:00"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>1:00</time></button>
+        <h2 id="s-hooks">Zéro configuration. <span class="dim">Les hooks Claude&nbsp;Code s’installent tout seuls.</span></h2>
+        <p>Au lancement, l’app ajoute ses hooks à ton <code>~/.claude/settings.json</code>. À chaque événement, Claude&nbsp;Code la prévient, et la bonne bulle se met à jour.</p>
+      </div>
+
+      <div class="hooks" id="hooks" data-tone="blue">
+        <div class="flow">
+          <div class="node">
+            <span class="node-ico" aria-hidden="true">&gt;_</span>
+            <b>Claude&nbsp;Code</b>
+            <small>dans VS&nbsp;Code</small>
+            <span class="node-out" id="hook-name">UserPromptSubmit</span>
+          </div>
+          <div class="wire" id="wire" aria-hidden="true"><span class="wire-label">127.0.0.1:3847</span><i class="packet"></i></div>
+          <div class="node">
+            <span class="node-ico" aria-hidden="true"><img src="media/icon-64.png" width="46" height="46" alt=""></span>
+            <b>VSCodeWorkers</b>
+            <small>sur ta machine</small>
+            <span class="node-out"><span class="status" id="hook-status" role="status">En cours…</span></span>
+          </div>
+        </div>
+        <div class="events" id="events" role="group" aria-label="Quatre des événements que Claude Code envoie">
+          <button type="button" aria-pressed="true"><code>UserPromptSubmit</code><span>Tu envoies un message</span></button>
+          <button type="button" aria-pressed="false"><code>PreToolUse</code><span>Claude lance un outil</span></button>
+          <button type="button" aria-pressed="false"><code>Notification</code><span>Claude a besoin de toi</span></button>
+          <button type="button" aria-pressed="false"><code>Stop</code><span>Claude a terminé</span></button>
+        </div>
+      </div>
+
+      <div class="local">
+        <h3>Rien ne quitte ta machine.</h3>
+        <p>Chaque hook parle à l’app sur <code>127.0.0.1:3847</code>, une adresse qui n’existe que sur ton ordinateur.</p>
+      </div>
+      <ul class="facts">
+        <li><b>Tes hooks restent intacts</b><p>L’app n’ajoute et ne retire que les siens, et garde une copie de ton fichier avant sa première modification.</p></li>
+        <li><b>Claude n’attend jamais</b><p>Les hooks tournent en arrière-plan&nbsp;: Claude ne les attend pas et ne les voit pas échouer, que l’app soit lancée ou non.</p></li>
+        <li><b>Tu peux tout retirer</b><p>Lance l’app une fois avec <code>--uninstall-hooks</code>&nbsp;: elle enlève ses hooks et se ferme.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="get" id="telecharger" aria-labelledby="s-get">
+    <div class="wrap">
+      <img class="get-icon" src="media/icon-512.png" width="104" height="104" loading="lazy" decoding="async" alt="">
+      <h2 id="s-get">Installe VSCodeWorkers.</h2>
+      <p class="get-ver">Gratuit · Version <span data-version>1.1.0</span></p>
+      <div class="get-buttons">
+        <a class="dl is-main" data-os="mac" href="#telecharger">
+          <svg class="dl-ico" viewBox="0 0 48 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <rect class="bit is-l" x="20" y="2.6" width="3.4" height="3.4" rx="0.9" fill="currentColor" stroke="none"/>
+            <rect class="bit is-r" x="24.6" y="2.6" width="3.4" height="3.4" rx="0.9" fill="currentColor" stroke="none"/>
+            <rect x="4" y="1" width="40" height="26.5" rx="3.6"/>
+            <path d="M18 1h12v4.2a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2z" fill="currentColor"/>
+            <path d="M0.8 32.2h46.4" stroke-linecap="round"/>
+          </svg>
+          <span class="dl-text"><b>Télécharger pour macOS</b><small>Puce Apple et Intel · .dmg · 178&nbsp;Mo</small></span>
+          <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5.5 19.5h13"/></svg>
+        </a>
+        <a class="dl" data-os="windows" href="#telecharger">
+          <svg class="dl-ico" viewBox="0 0 48 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <rect x="4" y="1" width="40" height="26.5" rx="3.6"/>
+            <path d="M4.4 21.2h39.2"/>
+            <rect class="bit is-up" x="8" y="22.9" width="6" height="2.6" rx="0.9" fill="currentColor" stroke="none"/>
+            <rect class="bit is-up" x="15.6" y="22.9" width="6" height="2.6" rx="0.9" fill="currentColor" stroke="none"/>
+            <rect class="bit is-up" x="23.2" y="22.9" width="6" height="2.6" rx="0.9" fill="currentColor" stroke="none"/>
+            <path d="M24 27.6v4.4M16 32.2h16" stroke-linecap="round"/>
+          </svg>
+          <span class="dl-text"><b>Télécharger pour Windows</b><small>64&nbsp;bits · .exe</small></span>
+          <svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5.5 19.5h13"/></svg>
+        </a>
+      </div>
+      <p class="get-note" id="get-note" role="status" hidden></p>
+      <p class="get-need">Il te faut VS&nbsp;Code et Claude&nbsp;Code.</p>
+
+      <ol class="install">
+        <li><b>Installe</b><p>Sur Mac, ouvre le fichier .dmg et glisse VSCodeWorkers dans Applications. Sous Windows, lance l’installateur.</p></li>
+        <li><b>Lance l’app</b><p>Elle installe ses hooks toute seule. Sur Mac, autorise l’Accessibilité quand elle le demande&nbsp;: c’est ce qui lui permet de retrouver tes fenêtres VS&nbsp;Code.</p></li>
+        <li><b>Ouvre une discussion Claude&nbsp;Code</b><p>Sa bulle apparaît. Celles qui étaient déjà ouvertes la rejoignent une fois redémarrées.</p></li>
+      </ol>
+
+      <details class="first">
+        <summary><span>Première ouverture <i>— ton système demande confirmation</i></span></summary>
+        <div class="first-in">
+          <div>
+            <h3>macOS</h3>
+            <p>L’app n’est pas encore notarisée par Apple&nbsp;: macOS la bloque au premier lancement. Ouvre Réglages Système, puis Confidentialité et sécurité, et clique «&nbsp;Ouvrir quand même&nbsp;». Sur un macOS plus ancien&nbsp;: clic droit sur l’app, puis Ouvrir.</p>
+            <p>Si macOS la dit «&nbsp;endommagée&nbsp;», lance dans le Terminal&nbsp;: <code>xattr -cr /Applications/VSCodeWorkers.app</code></p>
+          </div>
+          <div>
+            <h3>Windows</h3>
+            <p>L’installateur n’est pas encore signé&nbsp;: Windows affiche «&nbsp;Windows a protégé votre ordinateur&nbsp;». Clique «&nbsp;Informations complémentaires&nbsp;», puis «&nbsp;Exécuter quand même&nbsp;».</p>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Créé par <a href="https://www.instagram.com/aesomesoup/" target="_blank" rel="noopener">@aesomesoup</a></p>
+    <p>Projet indépendant, sans lien avec Anthropic, Microsoft ni Apple. Les projets montrés sont fictifs.</p>
+  </div>
+</footer>
+
+<script src="media/skins.js"></script>
+<script>
+(() => {
+  'use strict'
+
+  // What the two download buttons give: the installers of the public repository's latest
+  // release (site/README.md says how one is published). Their names never change, so these
+  // addresses do not either. Empty, a button says the file is not there yet.
+  const LATEST = 'https://github.com/aesomesoup-creator/vscodeworkers-releases/releases/latest/download/'
+  const RELEASE = {
+    version: '1.1.0',
+    mac: LATEST + 'VSCodeWorkers-mac.dmg',            // Apple silicon and Intel
+    windows: LATEST + 'VSCodeWorkers-windows.exe',    // 64-bit
+  }
+
+  const $ = (query, el = document) => el.querySelector(query)
+  const $$ = (query, el = document) => [...el.querySelectorAll(query)]
+  const still = matchMedia('(prefers-reduced-motion: reduce)')
+  const mouse = (event) => event.pointerType === 'mouse'
+
+  // Calls `enter` when at least `ratio` of the element is on screen, `leave` when it no longer is
+  function watch(el, ratio, enter, leave) {
+    if (!('IntersectionObserver' in window)) return enter()
+    let inside = false
+    new IntersectionObserver(([entry]) => {
+      const now = entry.intersectionRatio >= ratio
+      if (now === inside) return
+      inside = now
+      if (now) enter()
+      else if (leave) leave()
+    }, { threshold: [0, ratio] }).observe(el)
+  }
+
+  // ── The characters: 16 × 16 grids, drawn as vector pixels ────────────────────
+  const SKINS = window.VSCW_SKINS || { size: 16, series: [] }
+  const INK = '#141414'
+  const drawn = new Map()
+
+  // One path per colour, one rectangle per run of pixels
+  function runs(grid, match) {
+    const n = SKINS.size
+    let d = ''
+    for (let y = 0; y < n; y++) {
+      for (let x = 0; x < n; x++) {
+        if (!match(grid[y * n + x])) continue
+        let w = 1
+        while (x + w < n && match(grid[y * n + x + w])) w++
+        d += `M${x} ${y}h${w}v1h-${w}z`
+        x += w - 1
+      }
+    }
+    return d
+  }
+
+  // A skin's three frames (idle, two steps). The outline colour goes under everything, as the
+  // whole silhouette: no seam shows between two colours.
+  function sprite(skin) {
+    if (!skin) return ''
+    if (!drawn.has(skin)) {
+      const colours = Object.entries(skin.colours || { o: '#fff' })
+      const frames = skin.frames.map((grid, i) => `<g class="f${i}"><path fill="${INK}" d="${runs(grid, (c) => c !== '.')}"/>${
+        colours.map(([key, fill]) => `<path fill="${fill}" d="${runs(grid, (c) => c === key)}"/>`).join('')}</g>`)
+      drawn.set(skin, `<svg class="px" viewBox="0 0 ${SKINS.size} ${SKINS.size}" shape-rendering="crispEdges" aria-hidden="true" focusable="false">${frames.join('')}</svg>`)
+    }
+    return drawn.get(skin)
+  }
+
+  // The fox the film draws in the skin editor, and its coats (motion/src/sprites.js)
+  const FOX = [
+    '................', '..##........##..', '.#aa#......#aa#.', '.#apa######apa#.',
+    '.#aaaaaaaaaaaa#.', '.#aaaaaaaaaaaa#.', '.#aa#aaaaaa#aa#.', '.#aa#aaaaaa#aa#.',
+    '.#aaaaaaaaaaaa#.', '.#ooaaa##aaaoo#.', '..#oooaaaaooo#..', '...#oooooooo#...',
+    '....########....', '...#da#..#ad#...', '...#dd#..#dd#...', '...###....###...',
+  ].join('')
+  const FOXES = [
+    { a: '#ff9f0a', d: '#d96b00', p: '#ff6b81' }, { a: '#dfe7ee', d: '#9fb0c0', p: '#ff9db0' },
+    { a: '#e2553d', d: '#a8321f', p: '#ffc2a8' }, { a: '#9aa0a6', d: '#62686e', p: '#ff8fa3' },
+    { a: '#ffd60a', d: '#d9a400', p: '#ff7a8a' },
+  ].map((coat) => ({ frames: [FOX, FOX, FOX], colours: { ...coat, o: '#fff' } }))
+
+  // How many screen pixels a pixel of a character takes: whole ones, so that every pixel of the
+  // drawing has the same size. When that would shrink it too much, the size wins.
+  function snap(target) {
+    const dpr = window.devicePixelRatio || 1
+    const whole = Math.floor(target * dpr + 1e-4) / dpr
+    return whole >= target * 0.8 ? whole : target
+  }
+
+  // ── The five discussions of the film ─────────────────────────────────────────
+  const IDS = ['A', 'B', 'C', 'D', 'E']
+  const TALKS = {
+    A: { title: 'Refonte du panier', project: 'boutique-web' },
+    B: { title: 'Bug de connexion', project: 'app-mobile' },
+    C: { title: 'Tests de l’API', project: 'api-paiements' },
+    D: { title: 'Migration Postgres', project: 'serveur-data' },
+    E: { title: 'Mode sombre', project: 'site-vitrine' },
+  }
+  const castOf = (skins) => Object.fromEntries(IDS.map((id, i) => [id, skins[i]]))
+  let cast = castOf(SKINS.series[0] ? SKINS.series[0].skins : [])
+
+  // An island's state: who is on which side (nearest the camera first), which card is down,
+  // and where each discussion stands.
+  const NOW = {
+    A: { status: 'working', plan: 80, left: '~4 min' }, B: { status: 'done' },
+    C: { status: 'working', plan: 45, left: '~12 min' }, D: { status: 'working' }, E: { status: 'done' },
+  }
+  const BASE = { left: ['B', 'E'], right: ['D', 'C', 'A'], card: null, talks: NOW }
+  const SMALL = { ...BASE, right: ['D', 'C'], ids: ['B', 'C', 'D', 'E'] }   // a very narrow screen
+  const A_ENDS = { ...BASE, talks: { ...NOW, A: { status: 'working', plan: 100, left: '~1 min' } } }
+  const A_DONE = { left: ['A', 'B', 'E'], right: ['D', 'C'], card: null, talks: { ...NOW, A: { status: 'done', unread: true } } }
+  const A_SEEN = { ...A_DONE, talks: { ...NOW, A: { status: 'done' } } }
+  const D_ASKS = { left: ['D', 'A', 'B', 'E'], right: ['C'], card: null, talks: { ...A_SEEN.talks, D: { status: 'asking' } } }
+  const FOLDED = { ...A_DONE, left: ['A'], right: [], folded: true }
+
+  // ── The island: the app's own geometry (src/renderer/views/BarView.tsx) ──────
+  const NI = { bubble: 24, grown: 32, gap: 4, edge: 8, camera: 6, card: 300, cardHeight: { worker: 62, summary: 46 }, leaveMs: 250 }
+  const ICON = {
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.8-6.3L3.5 8.2"/><path d="M3.5 3.8v4.4h4.4"/><path d="M12 7.8v4.6l3 1.8"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    progress: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="9" width="3" height="5" rx="1"/><rect x="6.5" y="5" width="3" height="9" rx="1"/><rect x="11" y="2" width="3" height="12" rx="1"/></svg>',
+  }
+  const islands = []
+
+  // A bubble grows when its discussion needs you: it asks, or it has finished and you have not looked
+  const needsYou = (talk) => talk.status === 'asking' || (talk.status === 'done' && talk.unread)
+
+  // Everything is measured from the camera, in the app's own pixels. o: { notch, gap, cardWidth }
+  function islandLayout(s, o) {
+    const size = (id) => (needsYou(s.talks[id]) ? NI.grown : NI.bubble)
+    const L = s.left.map(size)
+    const R = s.right.map(size)
+    const wing = (sizes) => (sizes.length ? sizes.reduce((n, x) => n + x + NI.gap, NI.edge + NI.camera - NI.gap) : 0)
+    const row = Math.max(o.notch, [...L, ...R].some((x) => x > NI.bubble) ? NI.grown + 6 : 0)
+    const lw = wing(L)
+    const rw = wing(R)
+    const half = o.gap / 2
+    const kind = !s.card ? null : s.card === 'summary' ? 'summary' : 'worker'
+    const x0 = kind ? Math.min(-half - lw, -o.cardWidth / 2) : -half - lw
+    const x1 = kind ? Math.max(half + rw, o.cardWidth / 2) : half + rw
+    const at = {}
+    let c = -half - NI.camera
+    s.left.forEach((id, i) => { c -= L[i]; at[id] = { x: c, y: (row - L[i]) / 2, size: L[i] }; c -= NI.gap })
+    c = half + NI.camera
+    s.right.forEach((id, i) => { at[id] = { x: c, y: (row - R[i]) / 2, size: R[i] }; c += R[i] + NI.gap })
+    return { x: x0, width: x1 - x0, height: row + (kind ? NI.cardHeight[kind] : 0), row, lw, rw, at, kind }
+  }
+
+  function cardHTML(s) {
+    if (s.card === 'summary') {
+      const talks = (s.ids || IDS).map((id) => s.talks[id])
+      const count = (status) => talks.filter((talk) => talk.status === status).length
+      const asking = count('asking')
+      const working = count('working')
+      const done = count('done')
+      const parts = [asking && `${asking} à confirmer`, working && `${working} en cours`, done && `${done} terminée${done > 1 ? 's' : ''}`].filter(Boolean)
+      return `<span class="ni-summary"><span class="ni-card-title">${talks.length} discussions</span><span class="ni-card-sub">${parts.join(' · ')}</span></span>`
+        + `<span class="ni-round">${ICON.clock}</span><span class="ni-round">${ICON.plus}</span>`
+    }
+    const talk = s.talks[s.card]
+    const status = talk.status === 'asking' ? 'Attend ta confirmation' : talk.status === 'done' ? 'Terminé' : talk.left || 'En cours…'
+    return `<span class="ni-card-main"><span class="ni-card-sprite">${sprite(cast[s.card])}</span><span class="ni-card-text">`
+      + `<span class="ni-card-title">${TALKS[s.card].title}</span><span class="ni-card-sub">${TALKS[s.card].project} · <b class="is-${talk.status}">${status}</b></span></span></span>`
+      + (talk.status === 'working' && talk.plan != null ? `<span class="ni-round is-progress">${ICON.progress}</span>` : '')
+  }
+
+  function createIsland(root, o) {
+    root.insertAdjacentHTML('beforeend', '<div class="ni-shape"></div><i class="ni-lens"></i><span class="ni-cam"></span>'
+      + (o.tags ? '<span class="ni-tag is-green"><i></i>Terminées</span><span class="ni-tag is-blue"><i></i>En cours</span>' : '')
+      + IDS.map((id) => `<span class="ni-bubble" data-id="${id}"><span class="ni-sprite"></span><i class="ni-dot"></i><i class="ni-meter"></i></span>`).join('')
+      + '<div class="ni-card"></div>')
+    const bubbles = Object.fromEntries($$('.ni-bubble', root).map((el) => [el.dataset.id, el]))
+    const card = $('.ni-card', root)
+    const tags = $$('.ni-tag', root)
+    const side = {}
+    let shown = ''
+
+    const island = {
+      root, o, s: o.state,
+      set(s) { island.s = s; island.render() },
+      // Without the transitions: for a change of size, not of state
+      place() { root.classList.add('is-still'); island.render(); void root.offsetWidth; root.classList.remove('is-still') },
+      dress() {
+        for (const id of IDS) $('.ni-sprite', bubbles[id]).innerHTML = sprite(cast[id])
+        shown = ''
+        island.render()
+      },
+      render() {
+        const s = island.s
+        const g = islandLayout(s, o)
+        const half = o.gap / 2
+        const vars = { '--x0': g.x, '--w': g.width, '--h': g.height, '--row': g.row, '--gap': o.gap, '--notch': o.notch, '--cw': o.cardWidth }
+        if (g.kind) vars['--ch'] = NI.cardHeight[g.kind]
+        for (const [name, value] of Object.entries(vars)) root.style.setProperty(name, value)
+        root.classList.toggle('is-open', !!g.kind)
+        root.classList.toggle('is-folded', !!s.folded || (!s.left.length && !s.right.length))
+
+        for (const id of IDS) {
+          const el = bubbles[id]
+          const talk = s.talks[id]
+          let at = g.at[id]
+          if (at) side[id] = s.left.includes(id) ? 'left' : 'right'
+          else {
+            // Not shown: tucked under the notch, on the side it will come out of
+            const from = side[id] || (talk.status === 'working' ? 'right' : 'left')
+            at = { x: from === 'left' ? -half + 4 : half - NI.bubble - 4, y: (g.row - NI.bubble) / 2, size: NI.bubble }
+          }
+          el.style.setProperty('--x', at.x)
+          el.style.setProperty('--y', at.y)
+          el.style.setProperty('--s', at.size)
+          el.style.setProperty('--p', `${talk.plan || 0}%`)
+          el.classList.toggle('is-away', !g.at[id])
+          el.classList.toggle('is-grown', at.size > NI.bubble)
+          el.classList.toggle('is-asking', talk.status === 'asking')
+          el.classList.toggle('is-working', talk.status === 'working')
+          el.classList.toggle('has-dot', talk.status === 'done' && !!talk.unread)
+          el.classList.toggle('has-meter', talk.status === 'working' && talk.plan != null)
+        }
+
+        if (g.kind) {
+          const key = `${s.card} ${JSON.stringify(s.talks[s.card] || s.talks)}`
+          if (key !== shown) { card.innerHTML = cardHTML(s); shown = key }
+        }
+        if (tags.length) {
+          tags[0].style.setProperty('--tx', -half - g.lw + 6)
+          tags[0].style.setProperty('--tw', Math.max(0, g.lw - 12))
+          tags[1].style.setProperty('--tx', half + 6)
+          tags[1].style.setProperty('--tw', Math.max(0, g.rw - 12))
+        }
+      },
+    }
+    islands.push(island)
+    island.dress()
+    return island
+  }
+
+  // Changes the characters of every island on the page
+  function dress(next) {
+    cast = next
+    for (const island of islands) island.dress()
+  }
+
+  // An island that answers: a bubble shows its card, the camera the summary
+  function live(island) {
+    const { root } = island
+    let timer = 0
+    root.classList.add('is-live')
+    const open = (card) => {
+      clearTimeout(timer)
+      root.classList.add('is-awake')
+      if (island.s.card !== card) island.set({ ...island.s, card })
+    }
+    const close = (after) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => { root.classList.remove('is-awake'); if (island.s.card) island.set({ ...island.s, card: null }) }, after)
+    }
+    root.addEventListener('pointerover', (event) => {
+      if (!mouse(event)) return
+      const bubble = event.target.closest('.ni-bubble')
+      if (bubble) open(bubble.dataset.id)
+      else if (event.target.closest('.ni-cam') || !island.s.card) open('summary')
+      else clearTimeout(timer)
+    })
+    root.addEventListener('pointerleave', (event) => { if (mouse(event)) close(NI.leaveMs) })
+    // A finger has no hover: a touch shows the card for a moment, a second one puts it away
+    root.addEventListener('pointerdown', (event) => {
+      if (mouse(event)) return
+      if (event.target.closest('.ni-card')) return close(4000)
+      const bubble = event.target.closest('.ni-bubble')
+      const card = bubble ? bubble.dataset.id : 'summary'
+      if (island.s.card === card) return close(0)
+      open(card)
+      close(4000)
+    })
+  }
+
+  // ── The island of the bar, at the top of the page ────────────────────────────
+  const brand = $('.brand')
+  const get = $('.bar-get')
+  const bar = createIsland($('#island'), { notch: 33, gap: 120, cardWidth: NI.card, state: { ...BASE, left: [], right: [] } })
+  let barRest = BASE
+  let barOut = false
+
+  // As wide as the room between the name and the button allows
+  function fitBar() {
+    const width = document.documentElement.clientWidth
+    const left = width / 2 - brand.getBoundingClientRect().right - 10
+    const right = get.getBoundingClientRect().left - width / 2 - 10
+    let pick = null
+    for (const state of [BASE, SMALL]) {
+      const wings = islandLayout(state, { notch: 0, gap: 0, cardWidth: 0 })
+      for (const r of [4 / 3, 1]) {
+        const gap = Math.min(120, 2 * Math.min(left / r - wings.lw - NI.edge, right / r - wings.rw - NI.edge))
+        if (!pick && gap >= (r > 1 ? 70 : 44)) pick = { state, r, gap }
+      }
+    }
+    pick = pick || { state: SMALL, r: 1, gap: 44 }
+    const { root, o } = bar
+    root.style.setProperty('--r', pick.r)
+    root.style.setProperty('--u', snap(1.5 * pick.r))
+    root.style.setProperty('--ug', snap(2 * pick.r))
+    root.style.setProperty('--uc', snap(2 * pick.r))
+    o.notch = 44 / pick.r
+    o.gap = pick.gap
+    o.cardWidth = Math.min(NI.card, Math.floor((width - 16) / pick.r))
+    barRest = pick.state
+    bar.s = barOut ? { ...barRest, card: bar.s.card } : { ...barRest, left: [], right: [] }
+    bar.place()
+  }
+  fitBar()
+  live(bar)
+  // The bubbles come out of the notch once the page is there
+  setTimeout(() => { barOut = true; bar.set({ ...barRest, card: bar.s.card }) }, still.matches ? 0 : 500)
+
+  // ── The scenes: the top of a Mac's screen, with the island at work ───────────
+  const SCENES = {
+    sides: { states: [BASE, { ...BASE, card: 'summary' }], rest: BASE, tags: true },
+    done: { states: [BASE, { ...A_DONE, card: 'A' }], rest: { ...A_DONE, card: 'A' }, play: [[0, BASE], [650, A_ENDS], [1500, { ...A_DONE, card: 'A' }]] },
+    ask: { states: [A_SEEN, { ...D_ASKS, card: 'D' }], rest: { ...D_ASKS, card: 'D' }, play: [[0, A_SEEN], [1300, { ...D_ASKS, card: 'D' }]] },
+    discret: { states: [FOLDED, A_DONE], rest: FOLDED, play: [[700, A_DONE], [3000, FOLDED]] },
+  }
+  const MENU = '<div class="stage-menu" aria-hidden="true"><span class="stage-menu-l"><i></i><b>Code</b><span>Fichier</span><span>Édition</span><span>Affichage</span></span><span class="stage-menu-r">Jeu. 1 oct.&nbsp; 14:20</span></div>'
+
+  const stages = $$('.stage').map((box) => {
+    const scene = SCENES[box.dataset.stage]
+    box.insertAdjacentHTML('afterbegin', MENU)
+    const island = createIsland($('.ni', box), { notch: 32, gap: 185, cardWidth: NI.card, tags: scene.tags, state: scene.rest })
+    return { box, scene, island, timers: [] }
+  })
+
+  // The largest size at which everything the scene shows fits in its box, the notch narrower
+  // if it must; the island is then centred on what it shows, as a crop of the screen would be.
+  function fitStage(stage) {
+    const width = stage.box.clientWidth
+    if (!width) return
+    const span = (r, gap) => {
+      const o = { notch: 32, gap, cardWidth: Math.min(NI.card, Math.floor((width - 16) / r)) }
+      let min = 0
+      let max = 0
+      for (const s of stage.scene.states) {
+        const g = islandLayout(s, o)
+        min = Math.min(min, g.x - NI.edge)
+        max = Math.max(max, g.x + g.width + NI.edge)
+      }
+      return { r, o, min, max, fits: (max - min) * r <= width - 20 }
+    }
+    let pick = null
+    for (const r of [2, 4 / 3, 1]) {
+      for (let gap = 185; gap >= 70 && !pick; gap -= 5) {
+        const tried = span(r, gap)
+        if (tried.fits) pick = tried
+      }
+    }
+    pick = pick || span(1, 70)
+    const { r, o, min, max } = pick
+    const centre = width / 2 - ((min + max) / 2) * r
+    const { root } = stage.island
+    stage.box.style.setProperty('--r', r)
+    stage.box.style.setProperty('--ml', Math.max(0, Math.round(centre + min * r - 14)))
+    stage.box.style.setProperty('--mr', Math.max(0, Math.round(width - (centre + max * r) - 14)))
+    root.style.left = `${centre}px`
+    root.style.setProperty('--u', snap(1.5 * r))
+    root.style.setProperty('--ug', snap(2 * r))
+    root.style.setProperty('--uc', snap(2 * r))
+    Object.assign(stage.island.o, o)
+    stage.island.place()
+  }
+
+  function play(stage, steps) {
+    stage.timers.forEach(clearTimeout)
+    stage.box.classList.add('is-awake')
+    stage.timers = steps.map(([at, state]) => setTimeout(() => stage.island.set(state), at))
+    stage.timers.push(setTimeout(() => stage.box.classList.remove('is-awake'), steps[steps.length - 1][0] + 1600))
+  }
+
+  for (const stage of stages) {
+    const { box, scene, island } = stage
+    fitStage(stage)
+    if (box.dataset.stage === 'sides') {
+      // The one to play with: its bubbles come out when it first shows, then answer the mouse
+      live(island)
+      if (!still.matches) {
+        island.s = { ...BASE, left: [], right: [] }
+        island.place()
+      }
+      let out = still.matches
+      watch(box, 0.5, () => {
+        box.classList.add('is-awake')
+        if (!out) { out = true; setTimeout(() => island.set({ ...BASE, card: island.s.card }), 250) }
+      }, () => box.classList.remove('is-awake'))
+      continue
+    }
+    if (box.dataset.stage === 'discret') {
+      // At rest only the bubble that needs you; the others come back under the mouse
+      const show = (state) => { stage.timers.forEach(clearTimeout); box.classList.toggle('is-awake', state !== FOLDED); island.set(state) }
+      box.addEventListener('pointerenter', (event) => { if (mouse(event)) show(A_DONE) })
+      box.addEventListener('pointerleave', (event) => { if (mouse(event)) show(FOLDED) })
+      box.addEventListener('pointerdown', (event) => { if (!mouse(event)) show(island.s === FOLDED ? A_DONE : FOLDED) })
+    } else {
+      // The scene plays again under the mouse, or under a finger
+      box.addEventListener('pointerenter', (event) => { if (mouse(event) && !still.matches) play(stage, scene.play) })
+      box.addEventListener('pointerdown', (event) => { if (!mouse(event) && !still.matches) play(stage, scene.play) })
+    }
+    let played = still.matches
+    watch(box, 0.75, () => { if (!played) { played = true; play(stage, scene.play) } })
+  }
+
+  // ── The film ─────────────────────────────────────────────────────────────────
+  const film = $('#film')
+  const filmStart = $('#film-start')
+  const chapters = $$('#chapters button')
+  const chapterRow = $('#chapters')
+  let current = -1
+  film.controls = false   // the page's own button until the film has started
+
+  function watchFilm(at) {
+    filmStart.hidden = true
+    film.controls = true
+    if (at != null) {
+      const seek = () => { film.currentTime = at }
+      if (film.readyState > 0) seek()
+      else film.addEventListener('loadedmetadata', seek, { once: true })
+    }
+    const playing = film.play()
+    if (playing) playing.catch(() => {})
+  }
+  filmStart.addEventListener('click', () => watchFilm(film.ended ? 0 : null))
+  film.addEventListener('ended', () => {
+    $('#film-start-text').textContent = 'Revoir le film'
+    film.controls = false
+    filmStart.hidden = false
+  })
+  film.addEventListener('timeupdate', () => {
+    let now = -1
+    chapters.forEach((chapter, i) => { if (film.currentTime >= Number(chapter.dataset.t) - 0.05) now = i })
+    if (now === current) return
+    current = now
+    chapters.forEach((chapter, i) => (i === now ? chapter.setAttribute('aria-current', 'true') : chapter.removeAttribute('aria-current')))
+    const chip = chapters[now]
+    if (chip && chapterRow.scrollWidth > chapterRow.clientWidth) {
+      chapterRow.scrollTo({ left: chip.offsetLeft - chapterRow.offsetLeft - 16, behavior: still.matches ? 'auto' : 'smooth' })
+    }
+  })
+  for (const chapter of chapters) chapter.addEventListener('click', () => watchFilm(Number(chapter.dataset.t)))
+  // Each step's time: back up to the film, at that moment
+  for (const chip of $$('.tc')) {
+    chip.addEventListener('click', () => {
+      $('#film-frame').scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'center' })
+      watchFilm(Number(chip.dataset.t))
+    })
+  }
+
+  // ── The scenes of the film: a picture at rest, the scene under the mouse ─────
+  let series = 0
+  for (const clip of $$('.clip')) {
+    const button = $('.clip-toggle', clip)
+    let video = null
+    let kept = false      // started with the button: it stays on
+    const turn = (on) => {
+      clip.classList.toggle('is-on', on)
+      button.setAttribute('aria-pressed', String(on))
+      button.setAttribute('aria-label', on ? 'Arrêter l’extrait' : 'Animer l’extrait')
+      if (clip.dataset.cast === 'foxes' && SKINS.series.length) dress(on ? castOf(FOXES) : castOf(SKINS.series[series].skins))
+    }
+    const start = (loop) => {
+      if (!video) {
+        video = document.createElement('video')
+        video.muted = true
+        video.playsInline = true
+        video.setAttribute('muted', '')
+        video.setAttribute('playsinline', '')
+        video.setAttribute('aria-hidden', 'true')
+        video.tabIndex = -1
+        video.preload = 'auto'
+        video.src = `media/${clip.dataset.clip}.mp4`
+        video.addEventListener('ended', () => stop())
+        clip.insertBefore(video, button)
+      }
+      video.loop = loop
+      turn(true)
+      const playing = video.play()
+      if (playing) playing.catch(() => turn(false))
+    }
+    const stop = () => {
+      kept = false
+      turn(false)
+      // Once the picture has come back over it
+      setTimeout(() => { if (video && !clip.classList.contains('is-on')) { video.pause(); video.currentTime = 0 } }, 320)
+    }
+    clip.addEventListener('pointerenter', (event) => { if (mouse(event) && !kept) start(true) })
+    clip.addEventListener('pointerleave', (event) => { if (mouse(event) && !kept) stop() })
+    button.addEventListener('click', () => {
+      if (clip.classList.contains('is-on') && kept) return stop()
+      kept = true
+      start(true)
+    })
+    // Once by itself the first time it is seen; where there is no mouse, for as long as it is seen
+    const touch = matchMedia('(hover: none)').matches
+    let seen = false
+    watch(clip, 0.6, () => {
+      if (still.matches || kept || clip.classList.contains('is-on')) return
+      if (touch) start(true)
+      else if (!seen) start(false)
+      seen = true
+    }, () => { if (touch && !kept) stop() })
+  }
+
+  // ── The skins ────────────────────────────────────────────────────────────────
+  const grid = $('#skin-grid')
+  const tabs = $$('#skin-tabs button')
+  function fitSkins() {
+    grid.style.setProperty('--su', snap(document.documentElement.clientWidth < 420 ? 3 : 4))
+  }
+  function showSeries(index, fresh) {
+    if (!SKINS.series[index]) return
+    series = index
+    tabs.forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === index))
+      tab.tabIndex = i === index ? 0 : -1
+    })
+    grid.innerHTML = SKINS.series[index].skins.map((skin, i) =>
+      `<li class="skin" style="--i: ${i}"><span class="skin-px">${sprite(skin)}</span><span class="skin-name">${skin.name}</span></li>`).join('')
+    grid.classList.toggle('is-new', !!fresh)
+    if (fresh) dress(castOf(SKINS.series[index].skins))
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => showSeries(i, true))
+    tab.addEventListener('keydown', (event) => {
+      const move = { ArrowRight: 1, ArrowLeft: -1 }[event.key]
+      if (!move) return
+      const next = (i + move + tabs.length) % tabs.length
+      tabs[next].focus()
+      showSeries(next, true)
+    })
+  })
+  // Under a finger, a character takes a few steps
+  grid.addEventListener('pointerdown', (event) => {
+    const skin = event.target.closest('.skin')
+    if (!skin || mouse(event)) return
+    skin.classList.add('is-walking')
+    setTimeout(() => skin.classList.remove('is-walking'), 1700)
+  })
+  fitSkins()
+  showSeries(0, false)
+
+  // ── How it works: an event leaves Claude Code, the bubble follows ────────────
+  const HOOKS = [
+    { status: 'En cours…', tone: 'blue' },
+    { status: 'Bash · npm test', tone: 'blue' },
+    { status: 'Attend ta confirmation', tone: 'orange' },
+    { status: 'Terminé', tone: 'green' },
+  ]
+  const hooks = $('#hooks')
+  const wire = $('#wire')
+  const hookStatus = $('#hook-status')
+  const events = $$('#events button')
+  let hook = 0
+  let hookTimer = 0
+  let cycle = 0
+  function send(index) {
+    hook = index
+    clearTimeout(hookTimer)
+    events.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)))
+    $('#hook-name').textContent = $('code', events[index]).textContent
+    const arrive = () => {
+      hooks.dataset.tone = HOOKS[index].tone
+      hookStatus.textContent = HOOKS[index].status
+      hookStatus.classList.remove('is-new')
+      void hookStatus.offsetWidth
+      hookStatus.classList.add('is-new')
+    }
+    if (still.matches) return arrive()
+    wire.classList.remove('is-sending')
+    void wire.offsetWidth
+    wire.classList.add('is-sending')
+    hookTimer = setTimeout(arrive, 520)
+  }
+  const rest = () => { clearInterval(cycle); cycle = 0 }
+  const run = () => { if (!cycle && !still.matches) cycle = setInterval(() => send((hook + 1) % HOOKS.length), 2600) }
+  events.forEach((button, i) => {
+    button.addEventListener('click', () => { rest(); send(i) })
+    button.addEventListener('pointerenter', (event) => { if (mouse(event)) { rest(); if (hook !== i) send(i) } })
+  })
+  hooks.addEventListener('pointerleave', (event) => { if (mouse(event) && hooks.classList.contains('is-seen')) run() })
+  watch(hooks, 0.5, () => { hooks.classList.add('is-seen'); run() }, () => { hooks.classList.remove('is-seen'); rest() })
+
+  // ── Download ─────────────────────────────────────────────────────────────────
+  for (const el of $$('[data-version]')) el.textContent = RELEASE.version
+  const platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''
+  const phone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (/Mac/i.test(platform) && navigator.maxTouchPoints > 1)
+  const os = phone ? null : /Win/i.test(platform) ? 'windows' : /Mac/i.test(platform) ? 'mac' : null
+  const note = $('#get-note')
+  const say = (text) => {
+    note.hidden = true
+    note.textContent = text
+    void note.offsetWidth
+    note.hidden = false
+  }
+  for (const button of $$('.dl')) {
+    const name = button.dataset.os === 'mac' ? 'macOS' : 'Windows'
+    if (os) button.classList.toggle('is-main', button.dataset.os === os)
+    if (RELEASE[button.dataset.os]) {
+      button.href = RELEASE[button.dataset.os]
+      // Neither installer is signed yet: better said while the file comes down than found out
+      // at the first launch
+      button.addEventListener('click', () => {
+        $('.first').open = true
+        say('Téléchargement lancé. Au premier lancement, ton système demandera confirmation : tout est expliqué plus bas, dans « Première ouverture ».')
+      })
+      continue
+    }
+    button.addEventListener('click', (event) => {
+      event.preventDefault()
+      say(`Bientôt : le fichier d’installation pour ${name} n’est pas encore en ligne.`)
+    })
+  }
+  if (phone && (RELEASE.mac || RELEASE.windows)) say('VSCodeWorkers s’installe sur un Mac ou un PC : ouvre cette page sur ton ordinateur.')
+
+  // ── Sizes follow the window ──────────────────────────────────────────────────
+  let asked = 0
+  const refit = () => {
+    cancelAnimationFrame(asked)
+    asked = requestAnimationFrame(() => { fitBar(); stages.forEach(fitStage); fitSkins() })
+  }
+  addEventListener('resize', refit)
+  addEventListener('load', refit)
+})()
+</script>
+</body>
+</html>
