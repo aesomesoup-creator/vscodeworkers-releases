@@ -419,7 +419,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
           </a>
         </div>
-        <p class="fine">Gratuit · Version <span data-version>1.1.0</span> · macOS et Windows</p>
+        <p class="fine">Gratuit · Version <span data-version>1.2.0</span> · macOS et Windows</p>
       </div>
     </div>
   </section>
@@ -605,6 +605,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
         <button class="tc" type="button" data-t="60" aria-label="Voir ce passage du film, à 1:00"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg><time>1:00</time></button>
         <h2 id="s-hooks">Zéro configuration. <span class="dim">Les hooks Claude&nbsp;Code s’installent tout seuls.</span></h2>
         <p>Au lancement, l’app ajoute ses hooks à ton <code>~/.claude/settings.json</code>. À chaque événement, Claude&nbsp;Code la prévient, et la bonne bulle se met à jour.</p>
+        <p class="note">Codex aussi&nbsp;: les discussions de l’extension Codex ont leur bulle sans rien installer, l’app lit ce que Codex écrit dans <code>~/.codex/sessions</code>. Elle voit ses questions, pas ses demandes d’autorisation.</p>
       </div>
 
       <div class="hooks" id="hooks" data-tone="blue">
@@ -647,7 +648,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
     <div class="wrap">
       <img class="get-icon" src="media/icon-512.png" width="104" height="104" loading="lazy" decoding="async" alt="">
       <h2 id="s-get">Installe VSCodeWorkers.</h2>
-      <p class="get-ver">Gratuit · Version <span data-version>1.1.0</span></p>
+      <p class="get-ver">Gratuit · Version <span data-version>1.2.0</span></p>
       <div class="get-buttons">
         <a class="dl is-main" data-os="mac" href="#telecharger">
           <svg class="dl-ico" viewBox="0 0 48 34" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
@@ -674,12 +675,12 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
         </a>
       </div>
       <p class="get-note" id="get-note" role="status" hidden></p>
-      <p class="get-need">Il te faut VS&nbsp;Code et Claude&nbsp;Code.</p>
+      <p class="get-need">Il te faut VS&nbsp;Code, et Claude&nbsp;Code ou l’extension Codex.</p>
 
       <ol class="install">
         <li><b>Installe</b><p>Sur Mac, ouvre le fichier .dmg et glisse VSCodeWorkers dans Applications. Sous Windows, lance l’installateur.</p></li>
         <li><b>Lance l’app</b><p>Elle installe ses hooks toute seule. Sur Mac, autorise l’Accessibilité quand elle le demande&nbsp;: c’est ce qui lui permet de retrouver tes fenêtres VS&nbsp;Code.</p></li>
-        <li><b>Ouvre une discussion Claude&nbsp;Code</b><p>Sa bulle apparaît. Celles qui étaient déjà ouvertes la rejoignent une fois redémarrées.</p></li>
+        <li><b>Ouvre une discussion Claude&nbsp;Code ou Codex</b><p>Sa bulle apparaît. Celles qui étaient déjà ouvertes la rejoignent une fois redémarrées.</p></li>
       </ol>
 
       <details class="first">
@@ -703,7 +704,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
 <footer class="foot">
   <div class="wrap">
     <p>Créé par <a href="https://www.instagram.com/aesomesoup/" target="_blank" rel="noopener">@aesomesoup</a></p>
-    <p>Projet indépendant, sans lien avec Anthropic, Microsoft ni Apple. Les projets montrés sont fictifs.</p>
+    <p>Projet indépendant, sans lien avec Anthropic, OpenAI, Microsoft ni Apple. Les projets montrés sont fictifs.</p>
   </div>
 </footer>
 
@@ -717,7 +718,7 @@ main { padding-top: calc(var(--bar) + env(safe-area-inset-top, 0px)); }
   // addresses do not either. Empty, a button says the file is not there yet.
   const LATEST = 'https://github.com/aesomesoup-creator/vscodeworkers-releases/releases/latest/download/'
   const RELEASE = {
-    version: '1.1.0',
+    version: '1.2.0',
     mac: LATEST + 'VSCodeWorkers-mac.dmg',            // Apple silicon and Intel
     windows: LATEST + 'VSCodeWorkers-windows.exe',    // 64-bit
   }
